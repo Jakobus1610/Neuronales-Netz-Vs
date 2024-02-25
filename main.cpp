@@ -1,4 +1,7 @@
+#include <iostream>
 #include <cmath>
+#include <stdarg.h>
+#include <conio.h>
 
 struct Node
 {
@@ -6,21 +9,42 @@ struct Node
 	double bias;
 };
 
+struct NodeLayer
+{
+	int numNodes;
+	Node* nodes;
+};
+
 struct Weight
 {
 	double weight;
 };
 
+
+struct WeightRow
+{
+	int numWeights;
+	Weight* weights;
+};
+
+struct WeightLayer
+{
+	int numWeightRows;
+	WeightRow* weightRows;
+};
+
 struct Network
 {
-	Node nodes[][];
-	Weight
+	int numNodeLayers;
+	NodeLayer* nodeLayers;
+	int numWeightsLayers;
+	WeightLayer* weightLayers;
 };
 
 struct NetworkInfo
 {
 	int numLayers;
-	int *numRows;
+	int* numRows;
 };
 
 const double EULER = 2.71828182845904523536;
@@ -36,12 +60,14 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 	}
 
 	network.numWeightsLayers = netInfo.numLayers - 1;
-	network.weightLayers = new WeightLayer[network.numWeightsLayers];
-	for (int i = 0; i < network.numWeightsLayers; i++)
+	network.weightLayers = new WeightLayer[netInfo.numLayers - 1];
+	for (int i = 0; i < netInfo.numLayers - 1; i++)
 	{
-		network.weightLayers[i].numWeightRows = netInfo.numRows[i];
-		network.weightLayers[i].weightRows = new WeightRow[netInfo.numRows[i]];
-		int weights = i < network.numNodeLayers ? network.nodeLayers[i + 1].numNodes : 0;
+		int row = i + 1 < netInfo.numLayers ? i + 1 : 0;
+		network.weightLayers[i].numWeightRows = netInfo.numRows[row];
+		network.weightLayers[i].weightRows = new WeightRow[netInfo.numRows[row]];
+
+		int weights = network.nodeLayers[row].numNodes;
 		for (int j = 0; j < netInfo.numRows[i]; j++)
 		{
 			network.weightLayers[i].weightRows[j].numWeights = network.nodeLayers[weights].numNodes;
@@ -61,13 +87,26 @@ double evaluate(int NodeLayer, int NodeRow)
 	return result;
 }
 
+void initNetworkInfo(int layers, NetworkInfo& netInfo, ...)
+{
+	va_list vl;
+	va_start(vl, layers);
+	netInfo.numLayers = layers;
+	netInfo.numRows = new int[layers];
+	for (int i = 0; i < layers; i++)
+	{
+		netInfo.numRows[i] = va_arg(vl, int);
+	}
+	va_end(vl);
+}
+
 int main()
 {
 	Network network;
 	NetworkInfo netInfo;
-	netInfo.numLayers = 5;
-	netInfo.numRows = new int[netInfo.numLayers] { 2, 3, 5, 5, 2 };
 
+	initNetworkInfo(5, netInfo, 2, 3, 5, 5, 2);
 	initNetwork(network, netInfo);
 
+	char ch = getch();
 }
