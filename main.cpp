@@ -51,27 +51,32 @@ const double EULER = 2.71828182845904523536;
 
 void initNetwork(Network& network, NetworkInfo netInfo)
 {
+	//	Approved
 	network.numNodeLayers = netInfo.numLayers;
 	network.nodeLayers = new NodeLayer[netInfo.numLayers];
+
 	for (int i = 0; i < netInfo.numLayers; i++)
 	{
 		network.nodeLayers[i].numNodes = netInfo.numRows[i];
 		network.nodeLayers[i].nodes = new Node[netInfo.numRows[i]];
 	}
 
-	network.numWeightsLayers = netInfo.numLayers - 1;
-	network.weightLayers = new WeightLayer[netInfo.numLayers - 1];
-	for (int i = 0; i < netInfo.numLayers - 1; i++)
+	//	Approved
+	network.numWeightsLayers = (netInfo.numLayers - 1);
+	network.weightLayers = new WeightLayer[(netInfo.numLayers - 1)];
+	for (int i = 0; i < (netInfo.numLayers - 1); i++)
 	{
-		int row = i + 1 < netInfo.numLayers ? i + 1 : 0;
+		int row = (i + 1) < netInfo.numLayers ? (i + 1) : 0;
 		network.weightLayers[i].numWeightRows = netInfo.numRows[row];
 		network.weightLayers[i].weightRows = new WeightRow[netInfo.numRows[row]];
 
-		int weights = network.nodeLayers[row].numNodes;
-		for (int j = 0; j < netInfo.numRows[i]; j++)
+		//	Not sure
+		int weights = network.nodeLayers[i].numNodes;
+		for (int j = 0; j < netInfo.numRows[row]; j++)
 		{
-			network.weightLayers[i].weightRows[j].numWeights = network.nodeLayers[weights].numNodes;
-			network.weightLayers[i].weightRows[j].weights = new Weight[network.nodeLayers[weights].numNodes];
+			//	Aswell
+			network.weightLayers[i].weightRows[j].numWeights = weights;
+			network.weightLayers[i].weightRows[j].weights = new Weight[weights];
 		}
 	}
 }
@@ -79,12 +84,6 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 double activationFunc(double value, double bias)
 {
 	return 1 / (1 + pow(EULER, -value + bias));
-}
-
-double evaluate(int NodeLayer, int NodeRow)
-{
-	double result = 0;
-	return result;
 }
 
 void initNetworkInfo(int layers, NetworkInfo& netInfo, ...)
@@ -95,9 +94,48 @@ void initNetworkInfo(int layers, NetworkInfo& netInfo, ...)
 	netInfo.numRows = new int[layers];
 	for (int i = 0; i < layers; i++)
 	{
-		netInfo.numRows[i] = va_arg(vl, int);
+		int value = va_arg(vl, int);
+		std::cout << "Value from index " << i << ": " << value << std::endl;
+		netInfo.numRows[i] = value;
 	}
 	va_end(vl);
+}
+
+void evaluateNetwork(Network& network, double* input, double* output)
+{
+	for(int layer = 0; layer < network.numNodeLayers; layer++)
+	{
+		if(layer == 0)
+		{
+			for(int node = 0; node < network.nodeLayers[layers].numNodes; node++)
+			{
+				network.nodeLayers[layers].nodes[node].value = input[node];
+				network.nodeLayers[layers].nodes[node].value = 0;
+			}
+		}
+		else
+		{
+			for(int node = 0; node < network.nodeLayers[layers].numNodes; node++)
+			{
+				double newTotalValue = 0;
+				for(int prevNode = 0; prevNode < network.nodeLayers[layers-1].numNodes; prevNode++)
+				{	
+					double newValue = 0;
+					newValue = network.nodeLayers[layer].nodes[prevNode].value;
+					newValue *= network.weightLayers[layer-1].weightRows[node].weights[prevNode].weight;
+					newTotalValue += newValue;
+				}
+				network.nodeLayers[layers].nodes[node].value = activationFunc(newTotalValue, network.nodeLayers[layers].nodes[node].bias);
+			}
+			if(layer == network.numNodeLayers-1)
+			{
+				for(int node = 0; node < network.nodeLayers[layers].numNodes; node++)
+				{
+					output[node] = network.nodeLayers[layers].nodes[node].value;
+				}
+			}
+		}
+	}
 }
 
 int main()
@@ -108,5 +146,5 @@ int main()
 	initNetworkInfo(5, netInfo, 2, 3, 5, 5, 2);
 	initNetwork(network, netInfo);
 
-	char ch = getch();
+	ch = getch();
 }
