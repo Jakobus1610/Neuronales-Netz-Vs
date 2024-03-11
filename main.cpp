@@ -140,10 +140,10 @@ void evaluateNetwork(Network& network, double* input, double* output)
 	}
 }
 
-void saveNetwork(Network network)
+void saveNetwork(Network network, std::string path)
 {
 	std::ofstream outputFile;
-	outputFile.open("savedNetwork.txt");
+	outputFile.open(path);
 	std::cout << "writing Network to outputFile.txt" << std::endl;
 	for(int layer = 0; layer < network.numNodeLayers; layer++)
 	{
@@ -172,6 +172,41 @@ void saveNetwork(Network network)
 		}
 	}
 	outputFile.close();
+}
+
+void interpretLine(std::string line)
+{
+	// only an example
+	char line[14] = "W: 0, 2, 0, 0";
+
+	char mode = line[0];
+	int numbers[4];
+	
+	switch (mode)
+	{
+	case 'S':
+		// Handle the structure of the network
+		break;
+	case 'N':
+		// Handle the value of a single node in the network
+		break;
+	case 'W':
+		// Handle the value of a single weight in the network
+		break;
+	default:
+		break;
+	}
+}
+
+void readNetwork(Network& network, std::string path)
+{
+	std::ifstream inputFile;
+	inputFile.open(path);
+	//	ToDo
+	//	- write function that can read and interpret a single line
+	//	- init the Network with the correct values
+	//	- Loop over all and write them
+	inputFile.close();
 }
 
 void printNetwork(Network network)
@@ -217,7 +252,7 @@ int main()
 	initNetworkInfo(5, netInfo, 2, 3, 5, 5, 2);
 	initNetwork(network, netInfo);
 	printNetwork(network);
-	saveNetwork(network);
+	saveNetwork(network, "savedNetwork.txt");
 
 	//ch = getch();
 }
