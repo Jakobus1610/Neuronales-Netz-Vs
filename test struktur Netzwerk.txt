@@ -55,3 +55,38 @@ l 0:
 n 0:
 nv 5;
 n 1:
+
+ 784 Nodes
++200 Nodes
++ 10 Nodes
+===
+ 994 Nodes
+
+ 784 * 200 Weights
++ 200 * 10 Weights
+=========
+   158.800 Weights
+
+     994 Nodes
++158.800 Weights
+========
+ 159.794 Zeilen
+
+159.794  Zeilen * 8 byte
+=======
+1.278.352 Mb
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

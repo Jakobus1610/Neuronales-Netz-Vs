@@ -64,6 +64,11 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 	}
 
 	//	Approved
+	if ((netInfo.numLayers - 1) < 0)
+	{
+		std::cout << "bruuu: " << (netInfo.numLayers - 1) << std::endl;
+		return;
+	}
 	network.numWeightsLayers = (netInfo.numLayers - 1);
 	network.weightLayers = new WeightLayer[(netInfo.numLayers - 1)];
 	for (int i = 0; i < (netInfo.numLayers - 1); i++)
@@ -149,7 +154,7 @@ void saveNetwork(Network network, std::string path)
 	{
 		int layers = network.numNodeLayers;
 		int rows = network.nodeLayers[layer].numNodes;
-		outputFile << "S: " << layers << ", " << layer << ", " << rows << std::endl;
+		outputFile << "S:" << layers << "," << layer << "," << rows << std::endl;
 	}
 	for(int layer = 0; layer < network.numNodeLayers; layer++)
 	{
@@ -157,7 +162,7 @@ void saveNetwork(Network network, std::string path)
 		{
 			int value = network.nodeLayers[layer].nodes[node].value;
 			int bias = network.nodeLayers[layer].nodes[node].bias;
-			outputFile << "N: " << layer << ", " << node << ", " << value << ", " << bias << std::endl;
+			outputFile << "N:" << layer << "," << node << "," << value << "," << bias << std::endl;
 		}
 	}
 	for(int layer = 0; layer < network.numWeightsLayers; layer++)
@@ -167,7 +172,7 @@ void saveNetwork(Network network, std::string path)
 			for(int weight = 0; weight < network.weightLayers[layer].weightRows[row].numWeights; weight++)
 			{
 				int value = network.weightLayers[layer].weightRows[row].weights[weight].value;
-				outputFile << "W: " << layer << ", " << row << ", " << weight << ", "<< value << std::endl;
+				outputFile << "W:" << layer << "," << row << "," << weight << ","<< value << std::endl;
 			}
 		}
 	}
@@ -177,7 +182,7 @@ void saveNetwork(Network network, std::string path)
 void interpretLine(std::string line)
 {
 	// only an example
-	char line[14] = "W: 0, 2, 0, 0";
+	//char line[14] = "W: 0, 2, 0, 0";
 
 	char mode = line[0];
 	int numbers[4];
@@ -250,8 +255,10 @@ int main()
 	NetworkInfo netInfo;
 
 	initNetworkInfo(5, netInfo, 2, 3, 5, 5, 2);
+	//initNetworkInfo(3, netInfo, 784, 200, 10);
 	initNetwork(network, netInfo);
-	printNetwork(network);
+	std::cout << "Tset\n";
+	//printNetwork(network);
 	saveNetwork(network, "savedNetwork.txt");
 
 	//ch = getch();
