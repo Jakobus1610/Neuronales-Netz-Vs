@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <stdarg.h>
-#include <conio.h>
+//#include <conio.h>
 
 struct Node
 {
@@ -107,31 +107,31 @@ void evaluateNetwork(Network& network, double* input, double* output)
 	{
 		if(layer == 0)
 		{
-			for(int node = 0; node < network.nodeLayers[layers].numNodes; node++)
+			for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 			{
-				network.nodeLayers[layers].nodes[node].value = input[node];
-				network.nodeLayers[layers].nodes[node].value = 0;
+				network.nodeLayers[layer].nodes[node].value = input[node];
+				network.nodeLayers[layer].nodes[node].value = 0;
 			}
 		}
 		else
 		{
-			for(int node = 0; node < network.nodeLayers[layers].numNodes; node++)
+			for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 			{
 				double newTotalValue = 0;
-				for(int prevNode = 0; prevNode < network.nodeLayers[layers-1].numNodes; prevNode++)
+				for(int prevNode = 0; prevNode < network.nodeLayers[layer-1].numNodes; prevNode++)
 				{	
 					double newValue = 0;
 					newValue = network.nodeLayers[layer].nodes[prevNode].value;
 					newValue *= network.weightLayers[layer-1].weightRows[node].weights[prevNode].weight;
 					newTotalValue += newValue;
 				}
-				network.nodeLayers[layers].nodes[node].value = activationFunc(newTotalValue, network.nodeLayers[layers].nodes[node].bias);
+				network.nodeLayers[layer].nodes[node].value = activationFunc(newTotalValue, network.nodeLayers[layer].nodes[node].bias);
 			}
 			if(layer == network.numNodeLayers-1)
 			{
-				for(int node = 0; node < network.nodeLayers[layers].numNodes; node++)
+				for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 				{
-					output[node] = network.nodeLayers[layers].nodes[node].value;
+					output[node] = network.nodeLayers[layer].nodes[node].value;
 				}
 			}
 		}
@@ -146,5 +146,5 @@ int main()
 	initNetworkInfo(5, netInfo, 2, 3, 5, 5, 2);
 	initNetwork(network, netInfo);
 
-	ch = getch();
+	//ch = getch();
 }
