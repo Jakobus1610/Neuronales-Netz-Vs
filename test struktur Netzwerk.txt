@@ -1,0 +1,57 @@
+Mal ein Beispiel:
+
+Layer:  0,  1,  2,  3,  4
+Nodes:  2,  3,  5,  5,  2
+Weight: 0,  6,  15, 25, 10
+
+Idee:
+Layer; Node; Value; Weight; Value;
+L; N; W; V;
+
+Idee ist gut, aber ich brauche auch noch Bias und Value pro Node.
+Node und Gewichte trennen. Wir doppelt gespeichert aber Egal.
+Nodes:
+Layer, Node, Value, Bias
+
+Weights:
+Layer, Row, Index, Value
+
+=
+-----------
+0; 0; 1; 0; 1;
+0; 1; 1; 0; 1;
+-----------
+1; 1; 1; 0; 1;
+1; 1; 1; 1; 1;
+1; 2; 1; 0; 1;
+1; 2; 1; 1; 1;
+1; 3; 1; 0; 1;
+1; 3; 1; 1; 1;
+-----------
+2; 1; 1; 0; 1;
+2; 1; 1; 1; 1;
+2; 1; 1; 2; 1;
+2; 2; 1; 0; 1;
+2; 2; 1; 1; 1;
+2; 2; 1; 2; 1;
+2; 3; 1; 0; 1;
+2; 3; 1; 1; 1;
+2; 3; 1; 2; 1;
+2; 4; 1; 0; 1;
+2; 4; 1; 1; 1;
+2; 4; 1; 2; 1;
+2; 5; 1; 0; 1;
+2; 5; 1; 1; 1;
+2; 5; 1; 2; 1;
+-----------
+
+Layer:
+Node:
+Value;
+Weight:
+Value;
+
+l 0:
+n 0:
+nv 5;
+n 1:

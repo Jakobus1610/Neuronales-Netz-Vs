@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <cmath>
 #include <stdarg.h>
 //#include <conio.h>
@@ -74,7 +75,7 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 		int weights = network.nodeLayers[i].numNodes;
 		for (int j = 0; j < netInfo.numRows[row]; j++)
 		{
-			//	Aswell
+			//	Not sure
 			network.weightLayers[i].weightRows[j].numWeights = weights;
 			network.weightLayers[i].weightRows[j].weights = new Weight[weights];
 		}
@@ -134,6 +135,23 @@ void evaluateNetwork(Network& network, double* input, double* output)
 					output[node] = network.nodeLayers[layer].nodes[node].value;
 				}
 			}
+		}
+	}
+}
+
+void saveNetworkToFile(Network network)
+{
+
+}
+
+void printNetwork(Network network)
+{
+	for(int layer = 0; layer < network.numNodeLayers; layer++)
+	{
+		for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
+		{
+			int value = network.nodeLayers[layer].nodes[node].value;
+			int bias = network.nodeLayers[layer].nodes[node].bias;
 		}
 	}
 }
