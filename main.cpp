@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <cmath>
 #include <stdarg.h>
@@ -139,9 +140,38 @@ void evaluateNetwork(Network& network, double* input, double* output)
 	}
 }
 
-void saveNetworkToFile(Network network)
+void saveNetwork(Network network)
 {
-
+	std::ofstream outputFile;
+	outputFile.open("savedNetwork.txt");
+	std::cout << "writing Network to outputFile.txt" << std::endl;
+	for(int layer = 0; layer < network.numNodeLayers; layer++)
+	{
+		int layers = network.numNodeLayers;
+		int rows = network.nodeLayers[layer].numNodes;
+		outputFile << "S: " << layers << ", " << layer << ", " << rows << std::endl;
+	}
+	for(int layer = 0; layer < network.numNodeLayers; layer++)
+	{
+		for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
+		{
+			int value = network.nodeLayers[layer].nodes[node].value;
+			int bias = network.nodeLayers[layer].nodes[node].bias;
+			outputFile << "N: " << layer << ", " << node << ", " << value << ", " << bias << std::endl;
+		}
+	}
+	for(int layer = 0; layer < network.numWeightsLayers; layer++)
+	{
+		for(int row = 0; row < network.weightLayers[layer].numWeightRows; row++)
+		{
+			for(int weight = 0; weight < network.weightLayers[layer].weightRows[row].numWeights; weight++)
+			{
+				int value = network.weightLayers[layer].weightRows[row].weights[weight].value;
+				outputFile << "W: " << layer << ", " << row << ", " << weight << ", "<< value << std::endl;
+			}
+		}
+	}
+	outputFile.close();
 }
 
 void printNetwork(Network network)
@@ -187,6 +217,7 @@ int main()
 	initNetworkInfo(5, netInfo, 2, 3, 5, 5, 2);
 	initNetwork(network, netInfo);
 	printNetwork(network);
+	saveNetwork(network);
 
 	//ch = getch();
 }
