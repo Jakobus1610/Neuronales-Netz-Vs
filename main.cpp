@@ -1,62 +1,67 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <string>
 #include <cmath>
 #include <stdarg.h>
 #include <conio.h>
 
+#define DebugLog(x)// cout << x << endl;
+
 using namespace std;
 
 struct Node
 {
-	double value;
-	double bias;
+	double value = 0;
+	double bias = 0;
 };
 
 struct NodeLayer
 {
-	int numNodes;
+	int numNodes = 0;
 	vector<Node> nodes;
 	//Node* nodes;
 };
 
 struct Weight
 {
-	double value;
+	double value = 0;
 };
 
 
 struct WeightRow
 {
-	int numWeights;
+	int numWeights = 0;
 	vector<Weight> weights;
 	//Weight* weights;
 };
 
 struct WeightLayer
 {
-	int numWeightRows;
+	int numWeightRows = 0;
 	vector<WeightRow> weightRows;
 	//WeightRow* weightRows;
 };
 
 struct Network
 {
-	int numNodeLayers;
+	int numNodeLayers = 0;
 	vector<NodeLayer> nodeLayers;
 	//NodeLayer* nodeLayers;
-	int numWeightsLayers;
+	int numWeightsLayers = 0;
 	vector<WeightLayer> weightLayers;
 	//WeightLayer* weightLayers;
 };
 
 struct NetworkInfo
 {
-	int numLayers;
+	int numLayers = 0;
 	vector<int> numRows;
 	//int* numRows;
 };
+
+enum Mode { S_MODE, N_MODE, W_MODE, NO_MODE };
 
 const double EULER = 2.71828182845904523536;
 
@@ -77,7 +82,7 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 	//	Approved
 	if ((netInfo.numLayers - 1) < 0)
 	{
-		std::cout << "initNetwork bruuu: " << (netInfo.numLayers - 1) << std::endl;
+		cout << "initNetwork bruuu: " << (netInfo.numLayers - 1) << endl;
 		return;
 	}
 	network.numWeightsLayers = (netInfo.numLayers - 1);
@@ -118,7 +123,7 @@ NetworkInfo initNetworkInfo(int layers, ...)
 	for (int i = 0; i < layers; i++)
 	{
 		int value = va_arg(vl, int);
-		std::cout << "Value from index " << i << ": " << value << std::endl;
+		cout << "Value from index " << i << ": " << value << endl;
 		netInfo.numRows[i] = value;
 	}
 	va_end(vl);
@@ -162,16 +167,32 @@ void evaluateNetwork(Network& network, double* input, double* output)
 	}
 }
 
-void saveNetwork(Network network, std::string path)
+string getDataFormat(string mode, int layer, int row, double value, double bias)
 {
-	std::ofstream outputFile;
+	return mode + "," + to_string(layer) + "," + to_string(row) + "," + to_string(value) + "," + to_string(bias) + "\n";
+}
+
+string getDataFormat(string mode, int layer, int row, int weight, double value)
+{
+	return mode + "," + to_string(layer) + "," + to_string(row) + "," + to_string(weight) + "," + to_string(value) + "\n";
+}
+
+string getDataFormat(string mode, int layers, int row, int nodes)
+{
+	return mode + "," + to_string(layers) + "," + to_string(row) + "," + to_string(nodes) + "\n";
+}
+
+void saveNetwork(Network network, string path)
+{
+	ofstream outputFile;
 	outputFile.open(path);
-	std::cout << "writing Network to " << path << std::endl;
+	cout << "writing Network to " << path << endl;
 	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
 		int layers = network.numNodeLayers;
 		int rows = network.nodeLayers[layer].numNodes;
-		outputFile << "S:" << layers << "," << layer << "," << rows << std::endl;
+		//outputFile << "S:" << layers << "," << layer << "," << rows << endl;
+		outputFile << getDataFormat("s", layers, layer, rows);
 	}
 	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
@@ -179,7 +200,8 @@ void saveNetwork(Network network, std::string path)
 		{
 			int value = network.nodeLayers[layer].nodes[node].value;
 			int bias = network.nodeLayers[layer].nodes[node].bias;
-			outputFile << "N:" << layer << "," << node << "," << value << "," << bias << std::endl;
+			//outputFile << "N:" << layer << "," << node << "," << value << "," << bias << endl;
+			outputFile << getDataFormat("n", layer, node, value, bias);
 		}
 	}
 	for (int layer = 0; layer < network.numWeightsLayers; layer++)
@@ -189,15 +211,16 @@ void saveNetwork(Network network, std::string path)
 			for (int weight = 0; weight < network.weightLayers[layer].weightRows[row].numWeights; weight++)
 			{
 				int value = network.weightLayers[layer].weightRows[row].weights[weight].value;
-				outputFile << "W:" << layer << "," << row << "," << weight << "," << value << std::endl;
+				//outputFile << "W:" << layer << "," << row << "," << weight << "," << value << endl;
+				outputFile << getDataFormat("w", layer, row, weight, value);
 			}
 		}
 	}
 	outputFile.close();
-	std::cout << "finnished writing Network to " << path << std::endl;
+	cout << "finnished writing Network to " << path << endl;
 }
 
-void interpretLine(std::string line)
+void interpretLine(string line)
 {
 	// only an example
 	//char line[14] = "W: 0, 2, 0, 0";
@@ -221,39 +244,178 @@ void interpretLine(std::string line)
 	}
 }
 
-void readNetwork(Network& network, std::string path)
+void readNetwork(Network& network, string path)
 {
-	std::ifstream inputFile;
+	NetworkInfo netInfo;
+	ifstream inputFile;
 	inputFile.open(path);
 	//	ToDo
 	//	- write function that can read and interpret a single line
 	//	- init the Network with the correct values
 	//	- Loop over all and write them
+
+	string line, argument;
+	bool initSizeSet = false;
+	bool initNet = false;
+
+	while (getline(inputFile, line))
+	{
+		Mode mode = NO_MODE;
+		int modeCounter = 0;
+		stringstream ss(line);
+		int iNum1 = 0;
+		int iNum2 = 0;
+		int iNum3 = 0;
+		double dNum1 = 0;
+		double dNum2 = 0;
+		DebugLog("Get SS: " + line);
+		while (getline(ss, argument, ','))
+		{
+			switch (modeCounter)
+			{
+			case 0:
+				DebugLog("Case 0");
+				if (argument == "s")
+					mode = S_MODE;
+				if (argument == "n")
+					mode = N_MODE;
+				if (argument == "w")
+					mode = W_MODE;
+				break;
+
+				//	Case 1:
+			case 1:
+				DebugLog("Case 1");
+				switch (mode)
+				{
+				case S_MODE:
+					iNum1 = stoi(argument);
+					if (!initSizeSet)
+					{
+						netInfo.numLayers = iNum1;
+						netInfo.numRows.resize(iNum1);
+						initSizeSet = true;
+					}
+					break;
+				case N_MODE:
+					if (!initNet)
+					{
+						initNetwork(network, netInfo);
+						initNet = true;
+					}
+					iNum1 = stoi(argument);
+					break;
+				case W_MODE:
+					iNum1 = stoi(argument);
+					break;
+				default:
+					cout << "What happend? Read Network -> switch(mode) = " << mode << endl;
+					break;
+				}
+				break;
+
+				//	Case 2:
+			case 2:
+				DebugLog("Case 2");
+				switch (mode)
+				{
+				case S_MODE:
+					iNum2 = stoi(argument);
+					break;
+				case N_MODE:
+					iNum2 = stoi(argument);
+					break;
+				case W_MODE:
+					iNum2 = stoi(argument);
+					break;
+				default:
+					cout << "What happend? Read Network -> switch(mode) = " << mode << endl;
+					break;
+				}
+				break;
+
+				//	Case 3:
+			case 3:
+				DebugLog("Case 3");
+				switch (mode)
+				{
+				case S_MODE:
+					DebugLog("Get Num");
+					iNum3 = stoi(argument);
+					DebugLog("success");
+					DebugLog("Fill Row");
+					DebugLog("Num2: " + to_string(iNum2) + ", Num3: " + to_string(iNum3));
+					netInfo.numRows[iNum2] = iNum3;
+					DebugLog("success");
+					break;
+				case N_MODE:
+					dNum1 = stod(argument);
+					network.nodeLayers[iNum1].nodes[iNum2].value = dNum1;
+					break;
+				case W_MODE:
+					iNum3 = stoi(argument);
+					break;
+				default:
+					cout << "What happend? Read Network -> switch(mode) = " << mode << endl;
+					break;
+				}
+				break;
+
+				//	Case 4:
+			case 4:
+				DebugLog("Case 4");
+				switch (mode)
+				{
+				case S_MODE:
+					break;
+				case N_MODE:
+					dNum2 = stod(argument);
+					network.nodeLayers[iNum1].nodes[iNum2].bias = dNum2;
+					break;
+				case W_MODE:
+					dNum1 = stod(argument);
+					network.weightLayers[iNum1].weightRows[iNum2].weights[iNum3].value = dNum1;
+					break;
+				default:
+					cout << "What happend? Read Network -> switch(mode) = " << mode << endl;
+					break;
+				}
+				break;
+			default:
+				DebugLog("Default");
+				cout << "What happend? Read Network -> switch(modeCounter) = " << modeCounter << endl;
+				break;
+			}
+			modeCounter++;
+		}
+		cout << mode << "| " << iNum1 << ", " << iNum2 << ", " << iNum3 << "| " << dNum1 << ", " << dNum1 << endl;
+	}
+
 	inputFile.close();
 }
 
 void printNetwork(Network network)
 {
-	std::cout << "printing Network Stucture:\nS: Layers, Index, Rows" << std::endl;
+	cout << "printing Network Stucture:\nS: Layers, Index, Rows" << endl;
 	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
 		int layers = network.numNodeLayers;
 		int rows = network.nodeLayers[layer].numNodes;
-		std::cout << "S: " << layers << ", " << layer << ", " << rows << std::endl;
+		cout << "S: " << layers << ", " << layer << ", " << rows << endl;
 	}
 
-	std::cout << "printing Nodes:\nN: Layer, Node, Value, Bias" << std::endl;
+	cout << "printing Nodes:\nN: Layer, Node, Value, Bias" << endl;
 	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
 		for (int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 		{
 			int value = network.nodeLayers[layer].nodes[node].value;
 			int bias = network.nodeLayers[layer].nodes[node].bias;
-			std::cout << "N: " << layer << ", " << node << ", " << value << ", " << bias << std::endl;
+			cout << "N: " << layer << ", " << node << ", " << value << ", " << bias << endl;
 		}
 	}
 
-	std::cout << "printing Weights:\nW: Layer, Row, Weight, Value" << std::endl;
+	cout << "printing Weights:\nW: Layer, Row, Weight, Value" << endl;
 	for (int layer = 0; layer < network.numWeightsLayers; layer++)
 	{
 		for (int row = 0; row < network.weightLayers[layer].numWeightRows; row++)
@@ -261,7 +423,7 @@ void printNetwork(Network network)
 			for (int weight = 0; weight < network.weightLayers[layer].weightRows[row].numWeights; weight++)
 			{
 				int value = network.weightLayers[layer].weightRows[row].weights[weight].value;
-				std::cout << "W: " << layer << ", " << row << ", " << weight << ", " << value << std::endl;
+				cout << "W: " << layer << ", " << row << ", " << weight << ", " << value << endl;
 			}
 		}
 	}
@@ -272,41 +434,17 @@ int main()
 	Network network;
 	NetworkInfo netInfo;
 
-	std::cout << "bef init net info\n";
-	netInfo = initNetworkInfo(5, 2, 3, 5, 5, 2);
-	std::cout << "aft init net info\n";
-	//initNetworkInfo(3, netInfo, 784, 200, 10);
-	std::cout << "bef init net\n";
+	//netInfo = initNetworkInfo(5, 2, 3, 5, 5, 2);
+	//netInfo = initNetworkInfo(3, 784, 200, 10);
+	//initNetwork(network, netInfo);
+	//printNetwork(network);
+	//saveNetwork(network, "savedNetwork.txt");
+	DebugLog("Before Read");
+	readNetwork(network, "savedNetwork.txt");
+	DebugLog("After Read");
 
-	//	Error is here!
-	try {
-		initNetwork(network, netInfo);
-	}
-	catch (std::bad_array_new_length& e) {
-		std::cerr << "bad_array_new_length caught: " << e.what() << '\n';
-	}
+	cout << "press Key to close\n";
 
-	/*
-	bef init net info
-	Value from index 0: -1248070104
-	Value from index 1: 2
-	Value from index 2: 3
-	Value from index 3: 5
-	Value from index 4: 5
-	aft init net info
-	bef init net
-	bad_array_new_length caught: bad array new length
-	aft init net
-	*/
-
-	std::cout << "aft init net\n";
-
-	//_sleep(1000);
-
-	printNetwork(network);
-	saveNetwork(network, "savedNetwork.txt");
-
-	std::cout << "press Key to close\n";
-
-	char ch = getch();
+	char ch;
+	cin >> ch;
 }
