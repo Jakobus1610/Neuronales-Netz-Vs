@@ -5,11 +5,13 @@
 #include <string>
 #include <cmath>
 #include <stdarg.h>
-#include <conio.h>
+#include <chrono>
 
 #define DebugLog(x)// cout << x << endl;
+#define Log(x) cout << x << endl;
 
 using namespace std;
+using namespace std::chrono;
 
 struct Node
 {
@@ -52,7 +54,17 @@ struct Network
 	int numWeightsLayers = 0;
 	vector<WeightLayer> weightLayers;
 	//WeightLayer* weightLayers;
+	bool Network::operator==(const Network& net);
 };
+
+bool Network::operator==(const Network& net)
+{
+	if (net.numNodeLayers == numNodeLayers &&
+		net.numWeightsLayers == numWeightsLayers)
+		return true;
+		return false;
+}
+
 
 struct NetworkInfo
 {
@@ -64,6 +76,23 @@ struct NetworkInfo
 enum Mode { S_MODE, N_MODE, W_MODE, NO_MODE };
 
 const double EULER = 2.71828182845904523536;
+
+high_resolution_clock::time_point startT;
+high_resolution_clock::time_point stopT;
+
+void startTime()
+{
+	startT = high_resolution_clock::now();
+	Log("start Watch");
+}
+
+void stopTime()
+{
+	stopT = high_resolution_clock::now();
+	duration<double, milli> timeDif = duration_cast<duration<double, milli>>(stopT - startT);
+	Log("stop Watch");
+	Log("Duration: " + to_string(timeDif.count()) + " milliseconds");
+}
 
 void initNetwork(Network& network, NetworkInfo netInfo)
 {
@@ -246,6 +275,7 @@ void interpretLine(string line)
 
 void readNetwork(Network& network, string path)
 {
+	cout << "reading Network from " << path << endl;
 	NetworkInfo netInfo;
 	ifstream inputFile;
 	inputFile.open(path);
@@ -388,10 +418,11 @@ void readNetwork(Network& network, string path)
 			}
 			modeCounter++;
 		}
-		cout << mode << "| " << iNum1 << ", " << iNum2 << ", " << iNum3 << "| " << dNum1 << ", " << dNum1 << endl;
+		//cout << mode << "| " << iNum1 << ", " << iNum2 << ", " << iNum3 << "| " << dNum1 << ", " << dNum1 << endl;
 	}
 
 	inputFile.close();
+	cout << "finished reading Network from " << path << endl;
 }
 
 void printNetwork(Network network)
@@ -434,14 +465,24 @@ int main()
 	Network network;
 	NetworkInfo netInfo;
 
-	//netInfo = initNetworkInfo(5, 2, 3, 5, 5, 2);
+	netInfo = initNetworkInfo(5, 2, 3, 5, 5, 2);
 	//netInfo = initNetworkInfo(3, 784, 200, 10);
-	//initNetwork(network, netInfo);
+	initNetwork(network, netInfo);
 	//printNetwork(network);
-	//saveNetwork(network, "savedNetwork.txt");
 	DebugLog("Before Read");
-	readNetwork(network, "savedNetwork.txt");
-	DebugLog("After Read");
+	startTime();
+	saveNetwork(network, "savedNetwork.txt");	// ~ 1540 millis
+	stopTime();
+	Network network2;
+	startTime();
+	readNetwork(network2, "savedNetwork.txt");	// ~ 1040 millis
+	stopTime();
+
+	if (network == network2)
+		Log("Equal");
+
+
+		DebugLog("After Read");
 
 	cout << "press Key to close\n";
 
