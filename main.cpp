@@ -3,7 +3,7 @@
 #include <string>
 #include <cmath>
 #include <stdarg.h>
-//#include <conio.h>
+#include <conio.h>
 
 struct Node
 {
@@ -66,7 +66,7 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 	//	Approved
 	if ((netInfo.numLayers - 1) < 0)
 	{
-		std::cout << "bruuu: " << (netInfo.numLayers - 1) << std::endl;
+		std::cout << "initNetwork bruuu: " << (netInfo.numLayers - 1) << std::endl;
 		return;
 	}
 	network.numWeightsLayers = (netInfo.numLayers - 1);
@@ -93,10 +93,11 @@ double activationFunc(double value, double bias)
 	return 1 / (1 + pow(EULER, -value + bias));
 }
 
-void initNetworkInfo(int layers, NetworkInfo& netInfo, ...)
+NetworkInfo initNetworkInfo(int layers, ...)
 {
 	va_list vl;
 	va_start(vl, layers);
+	NetworkInfo netInfo;
 	netInfo.numLayers = layers;
 	netInfo.numRows = new int[layers];
 	for (int i = 0; i < layers; i++)
@@ -106,15 +107,16 @@ void initNetworkInfo(int layers, NetworkInfo& netInfo, ...)
 		netInfo.numRows[i] = value;
 	}
 	va_end(vl);
+	return netInfo;
 }
 
 void evaluateNetwork(Network& network, double* input, double* output)
 {
-	for(int layer = 0; layer < network.numNodeLayers; layer++)
+	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
-		if(layer == 0)
+		if (layer == 0)
 		{
-			for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
+			for (int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 			{
 				network.nodeLayers[layer].nodes[node].value = input[node];
 				network.nodeLayers[layer].nodes[node].value = 0;
@@ -122,21 +124,21 @@ void evaluateNetwork(Network& network, double* input, double* output)
 		}
 		else
 		{
-			for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
+			for (int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 			{
 				double newTotalValue = 0;
-				for(int prevNode = 0; prevNode < network.nodeLayers[layer-1].numNodes; prevNode++)
-				{	
+				for (int prevNode = 0; prevNode < network.nodeLayers[layer - 1].numNodes; prevNode++)
+				{
 					double newValue = 0;
 					newValue = network.nodeLayers[layer].nodes[prevNode].value;
-					newValue *= network.weightLayers[layer-1].weightRows[node].weights[prevNode].value;
+					newValue *= network.weightLayers[layer - 1].weightRows[node].weights[prevNode].value;
 					newTotalValue += newValue;
 				}
 				network.nodeLayers[layer].nodes[node].value = activationFunc(newTotalValue, network.nodeLayers[layer].nodes[node].bias);
 			}
-			if(layer == network.numNodeLayers-1)
+			if (layer == network.numNodeLayers - 1)
 			{
-				for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
+				for (int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 				{
 					output[node] = network.nodeLayers[layer].nodes[node].value;
 				}
@@ -149,34 +151,35 @@ void saveNetwork(Network network, std::string path)
 {
 	std::ofstream outputFile;
 	outputFile.open(path);
-	std::cout << "writing Network to outputFile.txt" << std::endl;
-	for(int layer = 0; layer < network.numNodeLayers; layer++)
+	std::cout << "writing Network to " << path << std::endl;
+	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
 		int layers = network.numNodeLayers;
 		int rows = network.nodeLayers[layer].numNodes;
 		outputFile << "S:" << layers << "," << layer << "," << rows << std::endl;
 	}
-	for(int layer = 0; layer < network.numNodeLayers; layer++)
+	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
-		for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
+		for (int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 		{
 			int value = network.nodeLayers[layer].nodes[node].value;
 			int bias = network.nodeLayers[layer].nodes[node].bias;
 			outputFile << "N:" << layer << "," << node << "," << value << "," << bias << std::endl;
 		}
 	}
-	for(int layer = 0; layer < network.numWeightsLayers; layer++)
+	for (int layer = 0; layer < network.numWeightsLayers; layer++)
 	{
-		for(int row = 0; row < network.weightLayers[layer].numWeightRows; row++)
+		for (int row = 0; row < network.weightLayers[layer].numWeightRows; row++)
 		{
-			for(int weight = 0; weight < network.weightLayers[layer].weightRows[row].numWeights; weight++)
+			for (int weight = 0; weight < network.weightLayers[layer].weightRows[row].numWeights; weight++)
 			{
 				int value = network.weightLayers[layer].weightRows[row].weights[weight].value;
-				outputFile << "W:" << layer << "," << row << "," << weight << ","<< value << std::endl;
+				outputFile << "W:" << layer << "," << row << "," << weight << "," << value << std::endl;
 			}
 		}
 	}
 	outputFile.close();
+	std::cout << "finnished writing Network to " << path << std::endl;
 }
 
 void interpretLine(std::string line)
@@ -186,7 +189,7 @@ void interpretLine(std::string line)
 
 	char mode = line[0];
 	int numbers[4];
-	
+
 	switch (mode)
 	{
 	case 'S':
@@ -217,7 +220,7 @@ void readNetwork(Network& network, std::string path)
 void printNetwork(Network network)
 {
 	std::cout << "printing Network Stucture:\nS: Layers, Index, Rows" << std::endl;
-	for(int layer = 0; layer < network.numNodeLayers; layer++)
+	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
 		int layers = network.numNodeLayers;
 		int rows = network.nodeLayers[layer].numNodes;
@@ -225,9 +228,9 @@ void printNetwork(Network network)
 	}
 
 	std::cout << "printing Nodes:\nN: Layer, Node, Value, Bias" << std::endl;
-	for(int layer = 0; layer < network.numNodeLayers; layer++)
+	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
-		for(int node = 0; node < network.nodeLayers[layer].numNodes; node++)
+		for (int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 		{
 			int value = network.nodeLayers[layer].nodes[node].value;
 			int bias = network.nodeLayers[layer].nodes[node].bias;
@@ -236,14 +239,14 @@ void printNetwork(Network network)
 	}
 
 	std::cout << "printing Weights:\nW: Layer, Row, Weight, Value" << std::endl;
-	for(int layer = 0; layer < network.numWeightsLayers; layer++)
+	for (int layer = 0; layer < network.numWeightsLayers; layer++)
 	{
-		for(int row = 0; row < network.weightLayers[layer].numWeightRows; row++)
+		for (int row = 0; row < network.weightLayers[layer].numWeightRows; row++)
 		{
-			for(int weight = 0; weight < network.weightLayers[layer].weightRows[row].numWeights; weight++)
+			for (int weight = 0; weight < network.weightLayers[layer].weightRows[row].numWeights; weight++)
 			{
 				int value = network.weightLayers[layer].weightRows[row].weights[weight].value;
-				std::cout << "W: " << layer << ", " << row << ", " << weight << ", "<< value << std::endl;
+				std::cout << "W: " << layer << ", " << row << ", " << weight << ", " << value << std::endl;
 			}
 		}
 	}
@@ -254,12 +257,39 @@ int main()
 	Network network;
 	NetworkInfo netInfo;
 
-	initNetworkInfo(5, netInfo, 2, 3, 5, 5, 2);
+	std::cout << "bef init net info\n";
+	netInfo = initNetworkInfo(5, 2, 3, 5, 5, 2);
+	std::cout << "aft init net info\n";
 	//initNetworkInfo(3, netInfo, 784, 200, 10);
-	initNetwork(network, netInfo);
-	std::cout << "Tset\n";
-	//printNetwork(network);
+	std::cout << "bef init net\n";
+
+	//	Error is here!
+	try {
+		initNetwork(network, netInfo);
+	}
+	catch (std::bad_array_new_length& e) {
+		std::cerr << "bad_array_new_length caught: " << e.what() << '\n';
+	}
+
+	/*
+	bef init net info
+	Value from index 0: -1248070104
+	Value from index 1: 2
+	Value from index 2: 3
+	Value from index 3: 5
+	Value from index 4: 5
+	aft init net info
+	bef init net
+	bad_array_new_length caught: bad array new length
+	aft init net
+	*/
+
+	std::cout << "aft init net\n";
+
+	//_sleep(1000);
+
+	printNetwork(network);
 	saveNetwork(network, "savedNetwork.txt");
 
-	//ch = getch();
+	char ch = getch();
 }
