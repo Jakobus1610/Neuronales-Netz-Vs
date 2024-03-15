@@ -1,9 +1,12 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <string>
 #include <cmath>
 #include <stdarg.h>
 #include <conio.h>
+
+using namespace std;
 
 struct Node
 {
@@ -14,7 +17,8 @@ struct Node
 struct NodeLayer
 {
 	int numNodes;
-	Node* nodes;
+	vector<Node> nodes;
+	//Node* nodes;
 };
 
 struct Weight
@@ -26,27 +30,32 @@ struct Weight
 struct WeightRow
 {
 	int numWeights;
-	Weight* weights;
+	vector<Weight> weights;
+	//Weight* weights;
 };
 
 struct WeightLayer
 {
 	int numWeightRows;
-	WeightRow* weightRows;
+	vector<WeightRow> weightRows;
+	//WeightRow* weightRows;
 };
 
 struct Network
 {
 	int numNodeLayers;
-	NodeLayer* nodeLayers;
+	vector<NodeLayer> nodeLayers;
+	//NodeLayer* nodeLayers;
 	int numWeightsLayers;
-	WeightLayer* weightLayers;
+	vector<WeightLayer> weightLayers;
+	//WeightLayer* weightLayers;
 };
 
 struct NetworkInfo
 {
 	int numLayers;
-	int* numRows;
+	vector<int> numRows;
+	//int* numRows;
 };
 
 const double EULER = 2.71828182845904523536;
@@ -55,12 +64,14 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 {
 	//	Approved
 	network.numNodeLayers = netInfo.numLayers;
-	network.nodeLayers = new NodeLayer[netInfo.numLayers];
+	network.nodeLayers.resize(netInfo.numLayers);
+	//network.nodeLayers = new NodeLayer[netInfo.numLayers];
 
 	for (int i = 0; i < netInfo.numLayers; i++)
 	{
 		network.nodeLayers[i].numNodes = netInfo.numRows[i];
-		network.nodeLayers[i].nodes = new Node[netInfo.numRows[i]];
+		network.nodeLayers[i].nodes.resize(netInfo.numRows[i]);
+		//network.nodeLayers[i].nodes = new Node[netInfo.numRows[i]];
 	}
 
 	//	Approved
@@ -70,12 +81,14 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 		return;
 	}
 	network.numWeightsLayers = (netInfo.numLayers - 1);
-	network.weightLayers = new WeightLayer[(netInfo.numLayers - 1)];
+	network.weightLayers.resize(netInfo.numLayers - 1);
+	//network.weightLayers = new WeightLayer[(netInfo.numLayers - 1)];
 	for (int i = 0; i < (netInfo.numLayers - 1); i++)
 	{
 		int row = (i + 1) < netInfo.numLayers ? (i + 1) : 0;
 		network.weightLayers[i].numWeightRows = netInfo.numRows[row];
-		network.weightLayers[i].weightRows = new WeightRow[netInfo.numRows[row]];
+		network.weightLayers[i].weightRows.resize(netInfo.numRows[row]);
+		//network.weightLayers[i].weightRows = new WeightRow[netInfo.numRows[row]];
 
 		//	Not sure
 		int weights = network.nodeLayers[i].numNodes;
@@ -83,7 +96,8 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 		{
 			//	Not sure
 			network.weightLayers[i].weightRows[j].numWeights = weights;
-			network.weightLayers[i].weightRows[j].weights = new Weight[weights];
+			network.weightLayers[i].weightRows[j].weights.resize(weights);
+			//network.weightLayers[i].weightRows[j].weights = new Weight[weights];
 		}
 	}
 }
@@ -99,7 +113,8 @@ NetworkInfo initNetworkInfo(int layers, ...)
 	va_start(vl, layers);
 	NetworkInfo netInfo;
 	netInfo.numLayers = layers;
-	netInfo.numRows = new int[layers];
+	netInfo.numRows.resize(layers);
+	//netInfo.numRows = new int[layers];
 	for (int i = 0; i < layers; i++)
 	{
 		int value = va_arg(vl, int);
@@ -290,6 +305,8 @@ int main()
 
 	printNetwork(network);
 	saveNetwork(network, "savedNetwork.txt");
+
+	std::cout << "press Key to close\n";
 
 	char ch = getch();
 }
