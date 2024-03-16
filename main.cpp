@@ -6,6 +6,7 @@
 #include <cmath>
 #include <stdarg.h>
 #include <chrono>
+#include "pngwriter.h"
 
 #define DebugLog(x)// cout << x << endl;
 #define Log(x) cout << x << endl;
@@ -62,7 +63,7 @@ bool Network::operator==(const Network& net)
 	if (net.numNodeLayers == numNodeLayers &&
 		net.numWeightsLayers == numWeightsLayers)
 		return true;
-		return false;
+	return false;
 }
 
 
@@ -76,6 +77,9 @@ struct NetworkInfo
 enum Mode { S_MODE, N_MODE, W_MODE, NO_MODE };
 
 const double EULER = 2.71828182845904523536;
+
+ifstream trainingSet;
+//int currentLineTrainingSet = 0;
 
 high_resolution_clock::time_point startT;
 high_resolution_clock::time_point stopT;
@@ -159,7 +163,7 @@ NetworkInfo initNetworkInfo(int layers, ...)
 	return netInfo;
 }
 
-void evaluateNetwork(Network& network, double* input, double* output)
+void evaluateNetwork(Network& network, vector<double> input, vector<double> output)
 {
 	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
@@ -194,6 +198,88 @@ void evaluateNetwork(Network& network, double* input, double* output)
 			}
 		}
 	}
+}
+
+void openTrainingSet(string path)
+{
+	trainingSet.open(path);
+}
+
+void closeTrainingSet()
+{
+	trainingSet.close();
+}
+
+vector<double> getNumberFromSet(int& number, vector<double>& vec)
+{
+	if (!trainingSet.is_open())
+	{
+		cout << "Abort. Trainingset not opend" << endl;
+		return vector<double>();
+	}
+	vector<double> output;
+	output.resize(784);
+	vec.resize(784);
+
+	string line, argument;
+
+	getline(trainingSet, line);
+	stringstream ss(line);
+	bool is_first_num = true;
+	int index = 0;
+
+	number = -1;
+
+	while (getline(ss, argument, ','))
+	{
+		if (is_first_num)
+		{
+			number = stoi(argument);
+			is_first_num = false;
+		}
+		else
+		{
+			double result = (stoi(argument) / static_cast<double>(255));
+			output[index] = result;
+		//	cout << argument << endl;
+		//	cout << result << endl;
+		//	cout << output[index] << endl;
+			//output.push_back(stod(argument));
+		}
+
+	}
+	vec = output;
+	return output;
+	//currentLineTrainingSet = currentLineTrainingSet < 50000 ? currentLineTrainingSet + 1 : 0;
+}
+
+void trainNetwork(Network& network)
+{
+
+}
+
+void plotNumber()
+{
+	vector<double> vec;
+	vector<double> vec2;
+	int num;
+	vec = getNumberFromSet(num, vec2);
+	string name = "testNum" + to_string(num) + ".png";
+	pngwriter png(28, 28, 0, name.c_str());
+	cout << num << endl;
+	int c = 0;
+	for (int x = 0; x < 28; x++)
+	{
+		for (int y = 0; y < 28; y++)
+		{
+			png.plot(x, y, vec[c], vec[c], vec[c]);
+			cout << c << ", " << vec[c] << endl;
+			cout << c << ", " << vec2[c] << endl;
+			c++;
+		}
+	}
+	png.close();
+	cout << endl;
 }
 
 string getDataFormat(string mode, int layer, int row, double value, double bias)
@@ -249,40 +335,12 @@ void saveNetwork(Network network, string path)
 	cout << "finnished writing Network to " << path << endl;
 }
 
-void interpretLine(string line)
-{
-	// only an example
-	//char line[14] = "W: 0, 2, 0, 0";
-
-	char mode = line[0];
-	int numbers[4];
-
-	switch (mode)
-	{
-	case 'S':
-		// Handle the structure of the network
-		break;
-	case 'N':
-		// Handle the value of a single node in the network
-		break;
-	case 'W':
-		// Handle the value of a single weight in the network
-		break;
-	default:
-		break;
-	}
-}
-
 void readNetwork(Network& network, string path)
 {
 	cout << "reading Network from " << path << endl;
 	NetworkInfo netInfo;
 	ifstream inputFile;
 	inputFile.open(path);
-	//	ToDo
-	//	- write function that can read and interpret a single line
-	//	- init the Network with the correct values
-	//	- Loop over all and write them
 
 	string line, argument;
 	bool initSizeSet = false;
@@ -465,6 +523,8 @@ int main()
 	Network network;
 	NetworkInfo netInfo;
 
+	/*
+
 	netInfo = initNetworkInfo(5, 2, 3, 5, 5, 2);
 	//netInfo = initNetworkInfo(3, 784, 200, 10);
 	initNetwork(network, netInfo);
@@ -481,8 +541,15 @@ int main()
 	if (network == network2)
 		Log("Equal");
 
+	*/
 
-		DebugLog("After Read");
+	openTrainingSet("mnist_train.csv");
+	plotNumber();
+	plotNumber();
+	plotNumber();
+	closeTrainingSet();
+
+	DebugLog("After Read");
 
 	cout << "press Key to close\n";
 
