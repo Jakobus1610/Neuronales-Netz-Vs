@@ -239,12 +239,16 @@ vector<double> getNumberFromSet(int& number, vector<double>& vec)
 		}
 		else
 		{
-			double result = (stoi(argument) / static_cast<double>(255));
+			int arg = stoi(argument);
+			double result = (double)arg / 255.0;
 			output[index] = result;
-		//	cout << argument << endl;
-		//	cout << result << endl;
-		//	cout << output[index] << endl;
+			//cout << argument << endl;
+		//	printf("res: %f\n", result);
+			//cout << result << endl;
+			//cout << output[index] << endl;
+		//	printf("out: %f\n", output[index]);
 			//output.push_back(stod(argument));
+			index++;
 		}
 
 	}
@@ -268,13 +272,13 @@ void plotNumber()
 	pngwriter png(28, 28, 0, name.c_str());
 	cout << num << endl;
 	int c = 0;
-	for (int x = 0; x < 28; x++)
+	for (int y = 27; y >= 0; y--)
 	{
-		for (int y = 0; y < 28; y++)
+		for (int x = 0; x < 28; x++)
 		{
 			png.plot(x, y, vec[c], vec[c], vec[c]);
-			cout << c << ", " << vec[c] << endl;
-			cout << c << ", " << vec2[c] << endl;
+			//cout << c << ", " << vec[c] << endl;
+			//cout << c << ", " << vec2[c] << endl;
 			c++;
 		}
 	}
@@ -542,7 +546,10 @@ int main()
 		Log("Equal");
 
 	*/
-
+	/*
+	Training Set CSV:
+	https://drive.google.com/file/d/1w6guG9fW3jA1D4_VeadwZwf4G86HBgQ3/view?usp=drive_link
+	*/
 	openTrainingSet("mnist_train.csv");
 	plotNumber();
 	plotNumber();
