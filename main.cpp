@@ -11,8 +11,11 @@
 #define DebugLog(x)// cout << x << endl;
 #define Log(x) cout << x << endl;
 
+
 using namespace std;
 using namespace std::chrono;
+
+typedef vector<double> dVec;
 
 struct Node
 {
@@ -72,6 +75,13 @@ struct NetworkInfo
 	int numLayers = 0;
 	vector<int> numRows;
 	//int* numRows;
+};
+
+struct DataPoint
+{
+	int number;
+	dVec values;
+	dVec expectedValues;
 };
 
 enum Mode { S_MODE, N_MODE, W_MODE, NO_MODE };
@@ -163,7 +173,7 @@ NetworkInfo initNetworkInfo(int layers, ...)
 	return netInfo;
 }
 
-void evaluateNetwork(Network& network, vector<double> input, vector<double> output)
+void evaluateNetwork(Network& network, dVec input, dVec output)
 {
 	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
@@ -210,16 +220,16 @@ void closeTrainingSet()
 	trainingSet.close();
 }
 
-vector<double> getNumberFromSet(int& number, vector<double>& vec)
+DataPoint GetDataPoint()
 {
+	DataPoint dataPoint;
+	dataPoint.values.resize(784);
+
 	if (!trainingSet.is_open())
 	{
 		cout << "Abort. Trainingset not opend" << endl;
-		return vector<double>();
+		return dataPoint;
 	}
-	vector<double> output;
-	output.resize(784);
-	vec.resize(784);
 
 	string line, argument;
 
@@ -228,33 +238,83 @@ vector<double> getNumberFromSet(int& number, vector<double>& vec)
 	bool is_first_num = true;
 	int index = 0;
 
-	number = -1;
+	dataPoint.number = -1;
 
 	while (getline(ss, argument, ','))
 	{
 		if (is_first_num)
 		{
-			number = stoi(argument);
+			dataPoint.number = stoi(argument);
 			is_first_num = false;
 		}
 		else
 		{
-			int arg = stoi(argument);
-			double result = (double)arg / 255.0;
-			output[index] = result;
+			double result = (double)stoi(argument) / 255.0;
+			dataPoint.values[index] = result;
 			//cout << argument << endl;
-		//	printf("res: %f\n", result);
+			//printf("res: %f\n", result);
 			//cout << result << endl;
 			//cout << output[index] << endl;
-		//	printf("out: %f\n", output[index]);
+			//printf("out: %f\n", output[index]);
 			//output.push_back(stod(argument));
 			index++;
 		}
 
 	}
-	vec = output;
-	return output;
+	dataPoint.expectedValues.resize(10);
+
+	switch (dataPoint.number)
+	{
+	case 0:
+		dataPoint.expectedValues = { 1,0,0,0,0,0,0,0,0,0 };
+		break;
+	case 1:
+		dataPoint.expectedValues = { 0,1,0,0,0,0,0,0,0,0 };
+		break;
+	case 2:
+		dataPoint.expectedValues = { 0,0,1,0,0,0,0,0,0,0 };
+		break;
+	case 3:
+		dataPoint.expectedValues = { 0,0,0,1,0,0,0,0,0,0 };
+		break;
+	case 4:
+		dataPoint.expectedValues = { 0,0,0,0,1,0,0,0,0,0 };
+		break;
+	case 5:
+		dataPoint.expectedValues = { 0,0,0,0,0,1,0,0,0,0 };
+		break;
+	case 6:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,1,0,0,0 };
+		break;
+	case 7:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,0,1,0,0 };
+		break;
+	case 8:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,0,0,1,0 };
+		break;
+	case 9:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,0,0,0,1 };
+		break;
+	default:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,0,0,0,0 };
+		cout << "Error. getNumberFromSet switch number" << endl;
+		break;
+	}
+	return dataPoint;
 	//currentLineTrainingSet = currentLineTrainingSet < 50000 ? currentLineTrainingSet + 1 : 0;
+}
+
+double calcNetworkCost(Network& network, dVec inputValues, dVec expectetValues)
+{
+	double totalcost = 0;
+	dVec networkOutput;
+	evaluateNetwork(network, inputValues, networkOutput);
+	for (int node = 0; node < networkOutput.size(); node++)
+	{
+		double cost = 0;
+
+	}
+	return 0.0;
 }
 
 void trainNetwork(Network& network)
@@ -262,21 +322,17 @@ void trainNetwork(Network& network)
 
 }
 
-void plotNumber()
+void plotNumber(DataPoint dataPoint)
 {
-	vector<double> vec;
-	vector<double> vec2;
-	int num;
-	vec = getNumberFromSet(num, vec2);
-	string name = "testNum" + to_string(num) + ".png";
+	string name = "testNum" + to_string(dataPoint.number) + ".png";
 	pngwriter png(28, 28, 0, name.c_str());
-	cout << num << endl;
+	cout << dataPoint.number << endl;
 	int c = 0;
 	for (int y = 27; y >= 0; y--)
 	{
 		for (int x = 0; x < 28; x++)
 		{
-			png.plot(x, y, vec[c], vec[c], vec[c]);
+			png.plot(x, y, dataPoint.values[c], dataPoint.values[c], dataPoint.values[c]);
 			//cout << c << ", " << vec[c] << endl;
 			//cout << c << ", " << vec2[c] << endl;
 			c++;
@@ -551,9 +607,14 @@ int main()
 	https://drive.google.com/file/d/1w6guG9fW3jA1D4_VeadwZwf4G86HBgQ3/view?usp=drive_link
 	*/
 	openTrainingSet("mnist_train.csv");
-	plotNumber();
-	plotNumber();
-	plotNumber();
+
+	DataPoint dataPoint;
+	for (int cycles = 0; cycles < 3; cycles++)
+	{
+		dataPoint = GetDataPoint();
+		plotNumber(dataPoint);
+	}
+
 	closeTrainingSet();
 
 	DebugLog("After Read");
