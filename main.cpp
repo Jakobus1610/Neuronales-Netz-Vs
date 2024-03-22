@@ -32,6 +32,7 @@ struct Weight
 	double value = 0;
 };
 
+//	Test comment
 
 struct WeightRow
 {
