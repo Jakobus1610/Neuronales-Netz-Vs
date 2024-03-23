@@ -100,10 +100,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Layer.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Network.cpp" />
     <ClCompile Include="pngwriter.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Layer.h" />
+    <ClInclude Include="Network.h" />
     <ClInclude Include="pngwriter.h" />
   </ItemGroup>
   <ItemGroup>
