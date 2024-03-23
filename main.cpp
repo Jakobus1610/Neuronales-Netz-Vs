@@ -18,6 +18,7 @@ struct Node
 {
 	double value = 0;
 	double bias = 0;
+	double gradientBias = 0;
 };
 
 struct NodeLayer
@@ -30,6 +31,7 @@ struct NodeLayer
 struct Weight
 {
 	double value = 0;
+	double gradientValue = 0;
 };
 
 //	Test comment
@@ -67,7 +69,6 @@ bool Network::operator==(const Network& net)
 	return false;
 }
 
-
 struct NetworkInfo
 {
 	int numLayers = 0;
@@ -85,13 +86,13 @@ ifstream trainingSet;
 high_resolution_clock::time_point startT;
 high_resolution_clock::time_point stopT;
 
-void startTime()
+void StartWatch()
 {
 	startT = high_resolution_clock::now();
 	Log("start Watch");
 }
 
-void stopTime()
+void StopWatch()
 {
 	stopT = high_resolution_clock::now();
 	duration<double, milli> timeDif = duration_cast<duration<double, milli>>(stopT - startT);
@@ -99,7 +100,7 @@ void stopTime()
 	Log("Duration: " + to_string(timeDif.count()) + " milliseconds");
 }
 
-void initNetwork(Network& network, NetworkInfo netInfo)
+void InitNetwork(Network& network, NetworkInfo netInfo)
 {
 	//	Approved
 	network.numNodeLayers = netInfo.numLayers;
@@ -141,12 +142,30 @@ void initNetwork(Network& network, NetworkInfo netInfo)
 	}
 }
 
-double activationFunc(double value, double bias)
+double ActivationFunc(double value)
 {
-	return 1 / (1 + pow(EULER, -value + bias));
+	return 1 / (1 + pow(EULER, -value));
 }
 
-NetworkInfo initNetworkInfo(int layers, ...)
+double ActivationFuncDervivative(double value)
+{
+	double activation = ActivationFunc(value);
+	return activation * (1 - activation);
+}
+
+double CostFunc(double input, double value)
+{
+	double res = input - value;
+	return (res * res);
+}
+
+double CostFuncDerivative(double input, double value)
+{
+	double res = input - value;
+	return 2 * res;
+}
+
+NetworkInfo InitNetworkInfo(int layers, ...)
 {
 	va_list vl;
 	va_start(vl, layers);
@@ -164,7 +183,7 @@ NetworkInfo initNetworkInfo(int layers, ...)
 	return netInfo;
 }
 
-void evaluateNetwork(Network& network, vector<double> input, vector<double> output)
+void EvaluateNetwork(Network& network, vector<double> input)
 {
 	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
@@ -188,39 +207,38 @@ void evaluateNetwork(Network& network, vector<double> input, vector<double> outp
 					newValue *= network.weightLayers[layer - 1].weightRows[node].weights[prevNode].value;
 					newTotalValue += newValue;
 				}
-				network.nodeLayers[layer].nodes[node].value = activationFunc(newTotalValue, network.nodeLayers[layer].nodes[node].bias);
+				newTotalValue += network.nodeLayers[layer].nodes[node].bias;
+				network.nodeLayers[layer].nodes[node].value = ActivationFunc(newTotalValue);
 			}
-			if (layer == network.numNodeLayers - 1)
+			/*if (layer == network.numNodeLayers - 1)
 			{
 				for (int node = 0; node < network.nodeLayers[layer].numNodes; node++)
 				{
 					output[node] = network.nodeLayers[layer].nodes[node].value;
 				}
-			}
+			}*/
 		}
 	}
 }
 
-void openTrainingSet(string path)
+void OpenTrainingSet(string path)
 {
 	trainingSet.open(path);
 }
 
-void closeTrainingSet()
+void CloseTrainingSet()
 {
 	trainingSet.close();
 }
 
-vector<double> getNumberFromSet(int& number, vector<double>& vec)
+void GetNetDigit(int& number, vector<double>& output)
 {
 	if (!trainingSet.is_open())
 	{
 		cout << "Abort. Trainingset not opend" << endl;
-		return vector<double>();
+		return;
 	}
-	vector<double> output;
 	output.resize(784);
-	vec.resize(784);
 
 	string line, argument;
 
@@ -253,22 +271,29 @@ vector<double> getNumberFromSet(int& number, vector<double>& vec)
 		}
 
 	}
-	vec = output;
-	return output;
 	//currentLineTrainingSet = currentLineTrainingSet < 50000 ? currentLineTrainingSet + 1 : 0;
 }
 
-void trainNetwork(Network& network)
+void TrainNetwork(Network& network)
+{
+	//	
+}
+
+void UpdateAllGradients(Network& network, vector<double> input)
+{
+	EvaluateNetwork(network, input);
+}
+
+void ApplyAllGradients()
 {
 
 }
 
-void plotNumber()
+void PlotNumber()
 {
 	vector<double> vec;
-	vector<double> vec2;
 	int num;
-	vec = getNumberFromSet(num, vec2);
+	GetNetDigit(num, vec);
 	string name = "testNum" + to_string(num) + ".png";
 	pngwriter png(28, 28, 0, name.c_str());
 	cout << num << endl;
@@ -287,22 +312,22 @@ void plotNumber()
 	cout << endl;
 }
 
-string getDataFormat(string mode, int layer, int row, double value, double bias)
+string GetDataFormat(string mode, int layer, int row, double value, double bias)
 {
 	return mode + "," + to_string(layer) + "," + to_string(row) + "," + to_string(value) + "," + to_string(bias) + "\n";
 }
 
-string getDataFormat(string mode, int layer, int row, int weight, double value)
+string GetDataFormat(string mode, int layer, int row, int weight, double value)
 {
 	return mode + "," + to_string(layer) + "," + to_string(row) + "," + to_string(weight) + "," + to_string(value) + "\n";
 }
 
-string getDataFormat(string mode, int layers, int row, int nodes)
+string GetDataFormat(string mode, int layers, int row, int nodes)
 {
 	return mode + "," + to_string(layers) + "," + to_string(row) + "," + to_string(nodes) + "\n";
 }
 
-void saveNetwork(Network network, string path)
+void SaveNetwork(Network network, string path)
 {
 	ofstream outputFile;
 	outputFile.open(path);
@@ -312,7 +337,7 @@ void saveNetwork(Network network, string path)
 		int layers = network.numNodeLayers;
 		int rows = network.nodeLayers[layer].numNodes;
 		//outputFile << "S:" << layers << "," << layer << "," << rows << endl;
-		outputFile << getDataFormat("s", layers, layer, rows);
+		outputFile << GetDataFormat("s", layers, layer, rows);
 	}
 	for (int layer = 0; layer < network.numNodeLayers; layer++)
 	{
@@ -321,7 +346,7 @@ void saveNetwork(Network network, string path)
 			int value = network.nodeLayers[layer].nodes[node].value;
 			int bias = network.nodeLayers[layer].nodes[node].bias;
 			//outputFile << "N:" << layer << "," << node << "," << value << "," << bias << endl;
-			outputFile << getDataFormat("n", layer, node, value, bias);
+			outputFile << GetDataFormat("n", layer, node, value, bias);
 		}
 	}
 	for (int layer = 0; layer < network.numWeightsLayers; layer++)
@@ -332,7 +357,7 @@ void saveNetwork(Network network, string path)
 			{
 				int value = network.weightLayers[layer].weightRows[row].weights[weight].value;
 				//outputFile << "W:" << layer << "," << row << "," << weight << "," << value << endl;
-				outputFile << getDataFormat("w", layer, row, weight, value);
+				outputFile << GetDataFormat("w", layer, row, weight, value);
 			}
 		}
 	}
@@ -340,7 +365,7 @@ void saveNetwork(Network network, string path)
 	cout << "finnished writing Network to " << path << endl;
 }
 
-void readNetwork(Network& network, string path)
+void ReadNetwork(Network& network, string path)
 {
 	cout << "reading Network from " << path << endl;
 	NetworkInfo netInfo;
@@ -393,7 +418,7 @@ void readNetwork(Network& network, string path)
 				case N_MODE:
 					if (!initNet)
 					{
-						initNetwork(network, netInfo);
+						InitNetwork(network, netInfo);
 						initNet = true;
 					}
 					iNum1 = stoi(argument);
@@ -488,7 +513,7 @@ void readNetwork(Network& network, string path)
 	cout << "finished reading Network from " << path << endl;
 }
 
-void printNetwork(Network network)
+void PrintNetwork(Network network)
 {
 	cout << "printing Network Stucture:\nS: Layers, Index, Rows" << endl;
 	for (int layer = 0; layer < network.numNodeLayers; layer++)
@@ -551,11 +576,11 @@ int main()
 	Training Set CSV:
 	https://drive.google.com/file/d/1w6guG9fW3jA1D4_VeadwZwf4G86HBgQ3/view?usp=drive_link
 	*/
-	openTrainingSet("mnist_train.csv");
-	plotNumber();
-	plotNumber();
-	plotNumber();
-	closeTrainingSet();
+	OpenTrainingSet("mnist_train.csv");
+	PlotNumber();
+	PlotNumber();
+	PlotNumber();
+	CloseTrainingSet();
 
 	DebugLog("After Read");
 
