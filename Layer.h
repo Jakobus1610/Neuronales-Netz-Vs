@@ -1,5 +1,21 @@
+#include "Utils.h"
 #pragma once
+
 class Layer
 {
-};
+public:
+	int nodesIn;
+	int nodesOut;
+	vector<double> weights;
+	vector<double> biases;
+	vector<double> grdBiases;
+	vector<double> grdWeighs;
 
+	Layer();
+	Layer(int nodesIn_in, int nodesOut_in);
+	vector<double> EvaluateLayer(vector<double> input);
+	void UpdateGradients();
+	void ApplyGradients();
+	double GetWeight(int nodeIn, int nodeOut);
+	void InitRndWeights();
+};
