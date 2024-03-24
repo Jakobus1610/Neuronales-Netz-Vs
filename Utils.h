@@ -23,12 +23,13 @@ enum Status {
 	Error = 0b0001
 };
 
+//	Test 16:36
+
 #pragma once
 class NNUtils
 {
 public:
-	static int LogStatus; 
-	static constexpr double euler = 2.71828182845904523536;
+	static int LogStatus;
 	static ifstream trainingSet;
 	static high_resolution_clock::time_point startT;
 	static high_resolution_clock::time_point stopT;

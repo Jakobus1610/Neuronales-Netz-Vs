@@ -39,20 +39,20 @@ void NNUtils::Log(Status stat, string str)
 void NNUtils::StartWatch()
 {
 	startT = high_resolution_clock::now();
-	Log(Info, "start Watch");
+	Log(Info, "Start Watch");
 }
 
 void NNUtils::StopWatch()
 {
 	stopT = high_resolution_clock::now();
 	duration<double, milli> timeDif = duration_cast<duration<double, milli>>(stopT - startT);
-	Log(Info, "stop Watch");
+	Log(Info, "Stop Watch");
 	Log(Info, "Duration: " + to_string(timeDif.count()) + " milliseconds");
 }
 
 double NNUtils::ActivationFunc(double value)
 {
-	return 1 / (1 + pow(euler, -value));
+	return 1 / (1 + exp(-value));
 }
 
 double NNUtils::ActivationFuncDervivative(double value)
