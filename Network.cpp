@@ -9,21 +9,21 @@ Network::Network(int numLayers_in, ...)
 	for (int i = 0; i < numLayers_in; i++)
 	{
 		int value = va_arg(vl, int);
-		NNUtils::Log(Debug, "Value at index " + ts(i) + ": " + ts(value));
+		NetUtils::Log(Debug, "Value at index " + ts(i) + ": " + ts(value));
 		//cout << "Value from index " << i << ": " << value << endl;
 		layerSizes[i] = value;
 	}
 	va_end(vl);
 
-	NNUtils::Log(Debug, "Finished with filling layerSizes in Network()");
+	NetUtils::Log(Debug, "Finished with filling layerSizes in Network()");
 	layers.resize(numLayers);
 	for (int indexLayer = 1; indexLayer < numLayers + 1; indexLayer++)
 	{
 		int subIndex = indexLayer - 1;
-		NNUtils::Log(Debug, "subIndex: " + ts(subIndex));
+		NetUtils::Log(Debug, "subIndex: " + ts(subIndex));
 		layers[subIndex] = Layer(layerSizes[subIndex], layerSizes[indexLayer]);
 	}
-	NNUtils::Log(Debug, "Finished with filling layers in Network()");
+	NetUtils::Log(Debug, "Finished with filling layers in Network()");
 }
 
 vector<double> Network::EvaluateLayers(vector<double> inputs)

@@ -582,37 +582,37 @@ int main()
 
 	//DebugLog("After Read");
 
-	NNUtils::LogStatus = Info | Debug | Warning | Error;
+	NetUtils::LogStatus = Info | Debug | Warning | Error;
 
 	for (int i = 0; i < 5; i++)
 	{
-		NNUtils::Log(Debug, "Rndm Num: " + to_string(NNUtils::RandomNumer(0.0, 1.0)));
-		//cout << "Rndm Num:" << NNUtils::RandomNumer(0.0, 1.0) << endl;
+		NetUtils::Log(Debug, "Rndm Num: " + to_string(NetUtils::RandomNumer(0.0, 1.0)));
+		//cout << "Rndm Num:" << NetUtils::RandomNumer(0.0, 1.0) << endl;
 	}
 
 	//cout << "press Key to close\n";
 
-	NNUtils::Log(Info, "Info");
-	NNUtils::Log(Debug, "Debug");
-	NNUtils::Log(Warning, "Warning");
-	NNUtils::Log(Error, "Error");
+	NetUtils::Log(Info, "Info" + " - File: " + ", Line: " + to_string(595));
+	NetUtils::Log(Debug, "Debug");
+	NetUtils::Log(Warning, "Warning");
+	NetUtils::Log(Error, "Error");
 
 	Network network(3, 2, 3, 2);
-	NNUtils::Log(Info, "Created Network");
+	NetUtils::Log(Info, "Created Network");
 	vector<double> input{ 1.0, 2.0 };
 	vector<double> output = network.EvaluateLayers(input);
-	NNUtils::Log(Info, "Evaluated Network");
+	NetUtils::Log(Info, "Evaluated Network");
 
 	for (auto& itr : input)
 	{
-		NNUtils::Log(Debug, "Inputs: " + to_string(itr));
+		NetUtils::Log(Debug, "Inputs: " + to_string(itr));
 	}
 	for (auto& itr : output)
 	{
-		NNUtils::Log(Debug, "Output: " + to_string(itr));
+		NetUtils::Log(Debug, "Output: " + to_string(itr));
 	}
 
-	NNUtils::Log(Info, "\nPress key to exit");
+	NetUtils::Log(Info, "\nPress key to exit");
 
 	char ch;
 	cin >> ch;

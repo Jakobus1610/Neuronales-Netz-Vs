@@ -1,11 +1,11 @@
 #include "Utils.h"
 
-int NNUtils::LogStatus = Info | Debug | Warning | Error;
-ifstream NNUtils::trainingSet = ifstream();
-high_resolution_clock::time_point NNUtils::startT = high_resolution_clock::now();
-high_resolution_clock::time_point NNUtils::stopT = high_resolution_clock::now();
+int NetUtils::LogStatus = Info | Debug | Warning | Error;
+ifstream NetUtils::trainingSet = ifstream();
+high_resolution_clock::time_point NetUtils::startT = high_resolution_clock::now();
+high_resolution_clock::time_point NetUtils::stopT = high_resolution_clock::now();
 
-void NNUtils::Log(Status stat, string str)
+void NetUtils::Log(Status stat, string str)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (stat & LogStatus)
@@ -36,13 +36,13 @@ void NNUtils::Log(Status stat, string str)
 	}
 }
 
-void NNUtils::StartWatch()
+void NetUtils::StartWatch()
 {
 	startT = high_resolution_clock::now();
 	Log(Info, "Start Watch");
 }
 
-void NNUtils::StopWatch()
+void NetUtils::StopWatch()
 {
 	stopT = high_resolution_clock::now();
 	duration<double, milli> timeDif = duration_cast<duration<double, milli>>(stopT - startT);
@@ -50,30 +50,30 @@ void NNUtils::StopWatch()
 	Log(Info, "Duration: " + to_string(timeDif.count()) + " milliseconds");
 }
 
-double NNUtils::ActivationFunc(double value)
+double NetUtils::ActivationFunc(double value)
 {
 	return 1 / (1 + exp(-value));
 }
 
-double NNUtils::ActivationFuncDervivative(double value)
+double NetUtils::ActivationFuncDervivative(double value)
 {
 	double activation = ActivationFunc(value);
 	return activation * (1 - activation);
 }
 
-double NNUtils::CostFunc(double input, double value)
+double NetUtils::CostFunc(double input, double value)
 {
 	double res = input - value;
 	return (res * res);
 }
 
-double NNUtils::CostFuncDerivative(double input, double value)
+double NetUtils::CostFuncDerivative(double input, double value)
 {
 	double res = input - value;
 	return 2 * res;
 }
 
-double NNUtils::RandomNumer(double min, double max)
+double NetUtils::RandomNumer(double min, double max)
 {
 	random_device rd;
 	mt19937 rng(rd());
@@ -81,24 +81,26 @@ double NNUtils::RandomNumer(double min, double max)
 	return dist(rng);
 }
 
-void NNUtils::OpenTrainingSet(string path)
+void NetUtils::OpenTrainingSet(string path)
 {
 	trainingSet.open(path);
 }
 
-void NNUtils::CloseTrainingSet()
+void NetUtils::CloseTrainingSet()
 {
 	trainingSet.close();
 }
 
-void NNUtils::GetNetDigit(int& number, vector<double>& output)
+DataPoint NetUtils::GetDataPoint()
 {
+	DataPoint dataPoint;
+	dataPoint.values.resize(784);
+
 	if (!trainingSet.is_open())
 	{
 		cout << "Abort. Trainingset not opend" << endl;
-		return;
+		return dataPoint;
 	}
-	output.resize(784);
 
 	string line, argument;
 
@@ -107,22 +109,80 @@ void NNUtils::GetNetDigit(int& number, vector<double>& output)
 	bool is_first_num = true;
 	int index = 0;
 
-	number = -1;
+	dataPoint.number = -1;
 
 	while (getline(ss, argument, ','))
 	{
 		if (is_first_num)
 		{
-			number = stoi(argument);
+			dataPoint.number = stoi(argument);
 			is_first_num = false;
 		}
 		else
 		{
-			int arg = stoi(argument);
-			double result = (double)arg / 255.0;
-			output[index] = result;
+			double result = (double)stoi(argument) / 255.0;
+			dataPoint.values[index] = result;
 			index++;
 		}
+
 	}
+	dataPoint.expectedValues.resize(10);
+
+	switch (dataPoint.number)
+	{
+	case 0:
+		dataPoint.expectedValues = { 1,0,0,0,0,0,0,0,0,0 };
+		break;
+	case 1:
+		dataPoint.expectedValues = { 0,1,0,0,0,0,0,0,0,0 };
+		break;
+	case 2:
+		dataPoint.expectedValues = { 0,0,1,0,0,0,0,0,0,0 };
+		break;
+	case 3:
+		dataPoint.expectedValues = { 0,0,0,1,0,0,0,0,0,0 };
+		break;
+	case 4:
+		dataPoint.expectedValues = { 0,0,0,0,1,0,0,0,0,0 };
+		break;
+	case 5:
+		dataPoint.expectedValues = { 0,0,0,0,0,1,0,0,0,0 };
+		break;
+	case 6:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,1,0,0,0 };
+		break;
+	case 7:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,0,1,0,0 };
+		break;
+	case 8:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,0,0,1,0 };
+		break;
+	case 9:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,0,0,0,1 };
+		break;
+	default:
+		dataPoint.expectedValues = { 0,0,0,0,0,0,0,0,0,0 };
+		cout << "Error. getNumberFromSet switch number" << endl;
+		NetUtils::Log(Error, "Error. getNumberFromSet switch number");
+		break;
+	}
+	return dataPoint;
 }
 
+void NetUtils::PlotNumber(DataPoint dataPoint)
+{
+	string name = "PlotedNumberIs-" + ts(dataPoint.number) + ".png";
+	pngwriter png(28, 28, 0, name.c_str());
+	cout << dataPoint.number << endl;
+	int grayScale = 0;
+	for (int y = 27; y >= 0; y--)
+	{
+		for (int x = 0; x < 28; x++)
+		{
+			png.plot(x, y, dataPoint.values[grayScale], dataPoint.values[grayScale], dataPoint.values[grayScale]);
+			grayScale++;
+		}
+	}
+	png.close();
+	cout << endl;
+}

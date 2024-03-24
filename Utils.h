@@ -11,10 +11,17 @@
 
 #include "Windows.h"
 
+#include "pngwriter.h"
+
 using namespace std;
 using namespace std::chrono;
 
 #define ts(x) to_string(x)
+#define LINE(x)	stringstream ss; \
+				ss << x << " - File: " << __FILE__ << ", Line: " << __LINE__) \
+				ss.str();
+
+string 
 
 enum Status {
 	Info = 0b1000,
@@ -25,8 +32,15 @@ enum Status {
 
 //	Test 16:36
 
+struct DataPoint
+{
+	vector<double> values;
+	vector<double> expectedValues;
+	int number;
+};
+
 #pragma once
-class NNUtils
+class NetUtils
 {
 public:
 	static int LogStatus;
@@ -44,6 +58,7 @@ public:
 	static double RandomNumer(double min, double max);
 	static void OpenTrainingSet(string path);
 	static void CloseTrainingSet();
-	static void GetNetDigit(int& number, vector<double>& output);
-	NNUtils() = delete;
+	static DataPoint GetDataPoint();
+	static void PlotNumber(DataPoint dataPoint);
+	NetUtils() = delete;
 };

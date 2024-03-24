@@ -14,14 +14,14 @@ Layer::Layer(int nodesIn_in, int nodesOut_in)
 {
 	nodesIn = nodesIn_in;
 	nodesOut = nodesOut_in;
-	NNUtils::Log(Debug, "Assinged values");
+	NetUtils::Log(Debug, "Assinged values");
 	weights = vector<double>(nodesIn * nodesOut);
 	grdWeighs = vector<double>(weights.size());
 	biases = vector<double>(nodesOut);
 	grdBiases = vector<double>(biases.size());
-	NNUtils::Log(Debug, "Assinged vectors");
+	NetUtils::Log(Debug, "Assinged vectors");
 	InitRndWeights();
-	NNUtils::Log(Debug, "Assinged rng weights");
+	NetUtils::Log(Debug, "Assinged rng weights");
 }
 
 vector<double> Layer::EvaluateLayer(vector<double> inputs)
@@ -32,7 +32,7 @@ vector<double> Layer::EvaluateLayer(vector<double> inputs)
 		for (int nodeIn = 0; nodeIn < nodesIn; nodeIn++)
 		{
 			double weightedInput = inputs[nodeIn] * GetWeight(nodeIn, nodeOut) + biases[nodeOut];
-			activations[nodeOut] = NNUtils::ActivationFunc(weightedInput);
+			activations[nodeOut] = NetUtils::ActivationFunc(weightedInput);
 		}
 	}
 	return activations;
@@ -54,10 +54,10 @@ double Layer::GetWeight(int nodeIn, int nodeOut)
 
 void Layer::InitRndWeights()
 {
-	NNUtils::Log(Debug, "weights.size(): " + ts(weights.size()));
+	NetUtils::Log(Debug, "weights.size(): " + ts(weights.size()));
 	for (int weightIndex = 0; weightIndex < weights.size(); weightIndex++)
 	{
-		NNUtils::Log(Debug, "weightIndex: " + ts(weightIndex));
-		weights[weightIndex] = NNUtils::RandomNumer(0.0, 1.0);
+		NetUtils::Log(Debug, "weightIndex: " + ts(weightIndex));
+		weights[weightIndex] = NetUtils::RandomNumer(0.0, 1.0);
 	}
 }
