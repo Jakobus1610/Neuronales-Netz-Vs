@@ -1,27 +1,7 @@
-#include <stdarg.h>
-#include <cmath>
-
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <string>
-#include <chrono>
-#include <random>
-
-#include "Windows.h"
-
+#ifndef NETUTILS_INCLUDE
+#define NETUTILS_INCLUDE 1
+#include "Includes.h"
 #include "pngwriter.h"
-
-using namespace std;
-using namespace std::chrono;
-
-#define ts(x) to_string(x)
-#define LINE(x)	stringstream ss; \
-				ss << x << " - File: " << __FILE__ << ", Line: " << __LINE__) \
-				ss.str();
-
-string 
 
 enum Status {
 	Info = 0b1000,
@@ -30,8 +10,6 @@ enum Status {
 	Error = 0b0001
 };
 
-//	Test 16:36
-
 struct DataPoint
 {
 	vector<double> values;
@@ -39,7 +17,6 @@ struct DataPoint
 	int number;
 };
 
-#pragma once
 class NetUtils
 {
 public:
@@ -62,3 +39,4 @@ public:
 	static void PlotNumber(DataPoint dataPoint);
 	NetUtils() = delete;
 };
+#endif

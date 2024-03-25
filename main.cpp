@@ -1,14 +1,13 @@
-#include "Utils.h"
-#include "Layer.h"
-#include "pngwriter.h"
+#include "Includes.h"
+
 #include "Network.h"
 
-#include <climits>
-#include <concepts>
-#include <cstdint>
-//#include <iostream>
-#include <type_traits>
-#include <utility>
+//#include <climits>
+//#include <concepts>
+//#include <cstdint>
+////#include <iostream>
+//#include <type_traits>
+//#include <utility>
 //#include <iostream>
 //#include <fstream>
 //#include <sstream>
@@ -584,20 +583,9 @@ int main()
 
 	NetUtils::LogStatus = Info | Debug | Warning | Error;
 
-	for (int i = 0; i < 5; i++)
-	{
-		NetUtils::Log(Debug, "Rndm Num: " + to_string(NetUtils::RandomNumer(0.0, 1.0)));
-		//cout << "Rndm Num:" << NetUtils::RandomNumer(0.0, 1.0) << endl;
-	}
-
-	//cout << "press Key to close\n";
-
-	NetUtils::Log(Info, "Info" + " - File: " + ", Line: " + to_string(595));
-	NetUtils::Log(Debug, "Debug");
-	NetUtils::Log(Warning, "Warning");
-	NetUtils::Log(Error, "Error");
-
-	Network network(3, 2, 3, 2);
+	//Network network(3, 2, 3, 2);
+	vector<int> layers{ 3, 2, 3, 2 };
+	Network network(layers);
 	NetUtils::Log(Info, "Created Network");
 	vector<double> input{ 1.0, 2.0 };
 	vector<double> output = network.EvaluateLayers(input);
@@ -609,8 +597,19 @@ int main()
 	}
 	for (auto& itr : output)
 	{
-		NetUtils::Log(Debug, "Output: " + to_string(itr));
+		NetUtils::Log(Warning, "Output: " + to_string(itr));
 	}
+
+	//string path = "networkSave.txt";
+	//Network::SaveNetwork(path, network);
+	//Network loadedNetwork = Network::LoadNetwork(path);
+
+	//output = loadedNetwork.EvaluateLayers(input);
+
+	/*for (auto& itr : output)
+	{
+		NetUtils::Log(Warning, "Output: " + to_string(itr));
+	}*/
 
 	NetUtils::Log(Info, "\nPress key to exit");
 

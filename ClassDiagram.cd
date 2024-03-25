@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
+  <Class Name="Layer">
+    <Position X="8" Y="1.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAIAAACAAAAAAAAAAAAAAABCAAYBAEQAAAAAQAAIA=</HashCode>
+      <FileName>Layer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Network">
+    <Position X="3.75" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAABAAACAAAAAAAAAAQAAAAABAQAAAA=</HashCode>
+      <FileName>Network.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="NetUtils">
+    <Position X="0.5" Y="4" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AEAQAAAAAAAIAQAgIAAAAKAAAAgEAKAIAAAIIgAIgIA=</HashCode>
+      <FileName>NetUtils.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="DataPoint">
+    <Position X="0.5" Y="0.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAQAAACAAAAAAAAAAAACAAAAAAAAAAAAA=</HashCode>
+      <FileName>NetUtils.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Enum Name="Status">
+    <Position X="3.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAYAAAAAAABAAAAAAAAAAAAAAAEAAAAA=</HashCode>
+      <FileName>NetUtils.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

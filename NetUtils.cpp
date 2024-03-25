@@ -1,4 +1,4 @@
-#include "Utils.h"
+#include "NetUtils.h"
 
 int NetUtils::LogStatus = Info | Debug | Warning | Error;
 ifstream NetUtils::trainingSet = ifstream();
@@ -162,7 +162,6 @@ DataPoint NetUtils::GetDataPoint()
 		break;
 	default:
 		dataPoint.expectedValues = { 0,0,0,0,0,0,0,0,0,0 };
-		cout << "Error. getNumberFromSet switch number" << endl;
 		NetUtils::Log(Error, "Error. getNumberFromSet switch number");
 		break;
 	}
@@ -186,3 +185,5 @@ void NetUtils::PlotNumber(DataPoint dataPoint)
 	png.close();
 	cout << endl;
 }
+
+

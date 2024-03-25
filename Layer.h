@@ -1,5 +1,6 @@
-#include "Utils.h"
-#pragma once
+#ifndef LAYER_INCLUDE
+#define LAYER_INCLUDE 1
+#include "Includes.h"
 
 class Layer
 {
@@ -19,3 +20,4 @@ public:
 	double GetWeight(int nodeIn, int nodeOut);
 	void InitRndWeights();
 };
+#endif
