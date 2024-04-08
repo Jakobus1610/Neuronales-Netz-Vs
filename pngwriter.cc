@@ -1,3 +1,5 @@
+#include "pch.h"
+
 /********************************* PNGwriter **********************************
 *
 *   Website: Main:             http://pngwriter.sourceforge.net/

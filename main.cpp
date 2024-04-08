@@ -1,5 +1,5 @@
 #include "Includes.h"
-
+#include "pch.h"
 #include "Network.h"
 
 //#include <climits>
@@ -570,52 +570,66 @@ int main()
 		/*
 		Training Set CSV:
 		https://drive.google.com/file/d/1w6guG9fW3jA1D4_VeadwZwf4G86HBgQ3/view?usp=drive_link
-		*/
+		/
 		//	OpenTrainingSet("mnist_train.csv");
 		//	PlotNumber();
 		//	PlotNumber();
 		//	PlotNumber();
 		//	CloseTrainingSet();
-
+		*/
 	//Network network(4, 2, 5, 3, 2);
 
 	//DebugLog("After Read");
 
-	NetUtils::LogStatus = Info | Debug | Warning | Error;
+	NetUtils::logStatus = Info | Debug | Warning | Error;
 
 	//Network network(3, 2, 3, 2);
-	vector<int> layers{ 3, 2, 3, 2 };
+	//netInfo = initNetworkInfo(3, 784, 200, 10);
+	//vector<int> layers{ 3, 2, 3, 2 };
+	vector<int> layers{ 3, 784, 200, 10 };
 	Network network(layers);
+	network.initLayerWeightsRnd();
 	NetUtils::Log(Info, "Created Network");
-	vector<double> input{ 1.0, 2.0 };
+	//vector<double> input{ 1.0, 2.0 };
+	DataPoint dataPoint =  NetUtils::GetDataPoint();
+	vector<double> input = dataPoint.values;
 	vector<double> output = network.EvaluateLayers(input);
 	NetUtils::Log(Info, "Evaluated Network");
 
 	for (auto& itr : input)
 	{
-		NetUtils::Log(Debug, "Inputs: " + to_string(itr));
+		NetUtils::Log(Debug, "Inputs: " + ts(itr));
 	}
 	for (auto& itr : output)
 	{
-		NetUtils::Log(Warning, "Output: " + to_string(itr));
+		NetUtils::Log(Warning, "Output: " + ts(itr));
 	}
 
-	//string path = "networkSave.txt";
-	//Network::SaveNetwork(path, network);
-	//Network loadedNetwork = Network::LoadNetwork(path);
+	string path = "networkSave.txt";
+	NetUtils::Log(Info, "Save Network");
+	NetUtils::StartWatch();
+	Network::SaveNetwork(path, network);
+	NetUtils::StopWatch();
+	NetUtils::Log(Info, "Load Network");
+	NetUtils::StartWatch();
+	Network loadedNetwork = Network::LoadNetwork(path);
+	NetUtils::StopWatch();
+	
+	output = loadedNetwork.EvaluateLayers(input);
 
-	//output = loadedNetwork.EvaluateLayers(input);
-
-	/*for (auto& itr : output)
+	for (auto& itr : output)
 	{
-		NetUtils::Log(Warning, "Output: " + to_string(itr));
-	}*/
+		NetUtils::Log(Warning, "Output: " + ts(itr));
+	}
+
+	NetUtils::PrintLogCounts();
 
 	NetUtils::Log(Info, "\nPress key to exit");
 
 	char ch;
 	cin >> ch;
 }
+
 
 /*
 using static System.Math;

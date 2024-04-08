@@ -1,6 +1,11 @@
 #include "NetUtils.h"
+#include "pch.h"
 
-int NetUtils::LogStatus = Info | Debug | Warning | Error;
+int NetUtils::logStatus = Info | Debug | Warning | Error;
+int NetUtils::debugCount = 0;
+int NetUtils::warningCount = 0;
+int NetUtils::errorCount = 0;
+int NetUtils::logCount = 0;
 ifstream NetUtils::trainingSet = ifstream();
 high_resolution_clock::time_point NetUtils::startT = high_resolution_clock::now();
 high_resolution_clock::time_point NetUtils::stopT = high_resolution_clock::now();
@@ -8,46 +13,58 @@ high_resolution_clock::time_point NetUtils::stopT = high_resolution_clock::now()
 void NetUtils::Log(Status stat, string str)
 {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (stat & LogStatus)
+	if (stat & logStatus)
 	{
 		switch (stat)
-		{	
+		{
 		case Info:
 			SetConsoleTextAttribute(hConsole, 0x0F);
+			logCount++;
 			break;
 		case Debug:
 			SetConsoleTextAttribute(hConsole, 0x02);
+			debugCount++;
 			break;
 		case Warning:
 			SetConsoleTextAttribute(hConsole, 0x6F);
+			warningCount++;
 			break;
 		case Error:
 			SetConsoleTextAttribute(hConsole, 0x4F);
+			errorCount++;
 			break;
 		default:
 			SetConsoleTextAttribute(hConsole, 0x0F);
 			break;
 		}
-		if(stat & Debug)
+		if (stat & Debug)
 			cout << str << endl;
 		else
 			cout << str << endl;
-
 	}
+}
+
+void NetUtils::PrintLogCounts()
+{
+	Log(Info, "\nAll log counts: \t" + ts(logCount + debugCount + warningCount + errorCount));
+	Log(Info, "Info count: \t\t" + ts(logCount));
+	Log(Info, "Debug count: \t\t" + ts(debugCount));
+	Log(Info, "Warning count: \t\t" + ts(warningCount));
+	Log(Info, "Error count: \t\t" + ts(errorCount));
 }
 
 void NetUtils::StartWatch()
 {
 	startT = high_resolution_clock::now();
-	Log(Info, "Start Watch");
+	Log(Warning, "Start Watch");
 }
 
 void NetUtils::StopWatch()
 {
 	stopT = high_resolution_clock::now();
 	duration<double, milli> timeDif = duration_cast<duration<double, milli>>(stopT - startT);
-	Log(Info, "Stop Watch");
-	Log(Info, "Duration: " + to_string(timeDif.count()) + " milliseconds");
+	Log(Warning, "Stop Watch");
+	Log(Warning, "Duration: " + to_string(timeDif.count()) + " milliseconds");
 }
 
 double NetUtils::ActivationFunc(double value)
@@ -99,6 +116,7 @@ DataPoint NetUtils::GetDataPoint()
 	if (!trainingSet.is_open())
 	{
 		cout << "Abort. Trainingset not opend" << endl;
+		NetUtils::Log(Error, "Trainingset isnt open!");
 		return dataPoint;
 	}
 

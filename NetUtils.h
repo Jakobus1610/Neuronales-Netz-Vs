@@ -1,6 +1,8 @@
-#ifndef NETUTILS_INCLUDE
-#define NETUTILS_INCLUDE 1
-#include "Includes.h"
+//#ifndef NETUTILS_INCLUDE
+//#define NETUTILS_INCLUDE 1
+//#include "Includes.h"
+#pragma once
+#include "pch.h"
 #include "pngwriter.h"
 
 enum Status {
@@ -20,12 +22,17 @@ struct DataPoint
 class NetUtils
 {
 public:
-	static int LogStatus;
+	static int logStatus;
+	static int debugCount;
+	static int warningCount;
+	static int errorCount;
+	static int logCount;
 	static ifstream trainingSet;
 	static high_resolution_clock::time_point startT;
 	static high_resolution_clock::time_point stopT;
 
 	static void Log(Status stat, string str);
+	static void PrintLogCounts();
 	static void StartWatch();
 	static void StopWatch();
 	static double ActivationFunc(double value);
@@ -39,4 +46,4 @@ public:
 	static void PlotNumber(DataPoint dataPoint);
 	NetUtils() = delete;
 };
-#endif
+//#endif
